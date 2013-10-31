@@ -1,0 +1,49 @@
+<!--
+<h1>Orders</h1>
+<hr>
+<div ng-repeat="order in orders">
+	<h1>{{order.orderid}}</h1>
+	<div ng-repeat="item in order.items track by $index">
+		{{item.name}}&nbsp;{{item.price}} EUR
+	</div>
+	<div>
+		<h3>Total: {{order.total}} EUR</h3>
+		<h5>Status: {{order.status}}</h5>
+	</div>
+	<div>
+		<button ng-show="order.status == 1" ng-click="setOrderStatusReady($index)">Ready</button>
+		<button ng-show="order.status == 2" ng-click="setOrderStatusComplete($index)">Complete</button>
+	</div>
+	<hr>
+</div>
+-->
+
+
+<!---------------------------------------->
+
+<div class="container">
+	<div class="panel panel-default" ng-repeat="order in orders">
+		<div class="panel-heading">
+			<h3 class="panel-title">Order: {{order.orderid}}</h3>
+		</div>
+		<div class="panel-body">
+			<h2>{{order.orderid}}</h2>
+			<table class="table table-striped">
+				<tr ng-repeat="item in order.items track by $index">
+					<td><h4>{{item.name}}</h4></td>
+  					<td><h4>{{item.price}}</h4></td>
+				</tr>
+			</table>
+			<div>
+				<h3>Total: {{order.total}} EUR</h3>
+				<h5>Status: {{order.status}}</h5>
+			</div>	
+			<div>
+				<button class="btn btn-primary" ng-show="order.status == 1" ng-click="setOrderStatusReady($index)">Ready</button>
+				<button class="btn btn-primary" ng-show="order.status == 2" ng-click="setOrderStatusComplete($index)">Complete</button>
+			</div>
+			
+		</div>
+		
+	</div>
+</div>
