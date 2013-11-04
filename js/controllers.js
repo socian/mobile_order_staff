@@ -50,21 +50,19 @@ mod.controller('InitializeController', function($scope, $http, $location, appMod
 	
 	this.loadAppData = function() {
 		$scope.status = "Loading application data";
-		//$http.get( "http://192.168.2.4/moframe/platforms/android/assets/www/cupsbandung.json" ).success(function(data) {
+		
+		// TODO:
+		// replace the path with the productive one
 		$http.get( "http://192.168.2.4/socian_venues/herbertzstuttgart/data.json").success(function(data) {
-		//$http.get( appModel.data.path ).success(function(data) {
+		
 			appModel.data.location = data.location;
 			appModel.data.menu = data.menu;
 			appModel.data.config = data.config;
 			
-			/*
 			if(confirm('Please confirm this location: ' + appModel.data.location.name)) {
 				_this.checkInternetConnection();	
 			}
-			else $location.path('/scan');
-			*/
-			
-			_this.checkInternetConnection();	
+			else $location.path('/scan');	
 		});
 		
 	}
@@ -110,21 +108,39 @@ mod.controller('InitializeController', function($scope, $http, $location, appMod
 	this.loadAppData();
 });
 
+//-------------------------------------------------------------//
+//      Commands for communicating with the order server
+//-------------------------------------------------------------//
+
+// TODO:
+// outsource this in an external file that can be included
+// by the server, patron and staff 
+var OrderCommand = {
+	REGISTER_STAFF : "registerStaff",
+	NEW_ORDER : "newOrder",
+	GET_ORDER : "getOrder",
+	GET_ORDER_LIST : "getOrderList",
+	UPDATE_ORDER_STATUS_READY : "updateOrderStatusReady",
+	UPDATE_ORDER_STATUS_COMPLETE : "updateOrderStatusComplete",
+	ORDER_UPDATE : "orderUpdate"
+}
+
+
 mod.controller('OrderController', function($scope, $location, appModel, orderModel, ws) {
 	
 	var _this = this;
 	
 	// register staff
-	ws.send(JSON.stringify( {command:'REGISTER_STAFF', data:null} ));
+	ws.send(JSON.stringify( {command:OrderCommand.REGISTER_STAFF, data:null} ));
 	
 	// get the orders
-	ws.send(JSON.stringify( {command:'GET_ORDER_LIST', data:{}} ));
+	ws.send(JSON.stringify( {command:OrderCommand.GET_ORDER_LIST, data:{}} ));
 	
 	$scope.setOrderStatusReady = function(index) {
 		var order = orderModel.data.orderlist[index];
 		var oid = order.orderid;
 		
-		var msg = {command:'UPDATE_ORDER_STATUS_READY', data:{orderid:oid}}
+		var msg = {command:OrderCommand.UPDATE_ORDER_STATUS_READY, data:{orderid:oid}}
 		ws.send(JSON.stringify(msg));
 	}
 	
@@ -133,23 +149,21 @@ mod.controller('OrderController', function($scope, $location, appModel, orderMod
 		var order = orderModel.data.orderlist[index];
 		var oid = order.orderid;
 		
-		var msg = {command:'UPDATE_ORDER_STATUS_COMPLETE', data:{orderid:oid}}
+		var msg = {command:OrderCommand.UPDATE_ORDER_STATUS_COMPLETE, data:{orderid:oid}}
 		ws.send(JSON.stringify(msg));
 	}
 	
 	//--------------------//
 	// web socket
 	//--------------------//
-	
-	this.handler = {
-		'ORDER_UPDATE' : function( data ) {	
-			orderModel.data.orderlist = data;
+	this.handler = {};
+	this.handler[ OrderCommand.ORDER_UPDATE ] = function(data) {
+		orderModel.data.orderlist = data;
 			$scope.$apply(function() {
 				$scope.orders = orderModel.data.orderlist;
 			});
-		}
 	}
-	
+		
 	ws.onmessage = function(message) {
 		var msg = angular.fromJson(message);
 		var handler = _this.handler[msg.command];
